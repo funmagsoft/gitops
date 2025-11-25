@@ -2,9 +2,9 @@
 
 Centralne repozytorium konfiguracji deploymentów dla wszystkich serwisów Java na AKS.
 
-> **⚡ Szybki start**: [QUICKSTART.md](QUICKSTART.md) - 2 minuty do pierwszego deployu
+**Szybki start**: [QUICKSTART.md](QUICKSTART.md) - 2 minuty do pierwszego deployu
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Dla deweloperów (twój serwis już używa GitOps)
 
@@ -13,7 +13,6 @@ Push do `main` → automatyczny deploy do `dev`:
 ```bash
 git commit -m "feat: my feature"
 git push origin main
-# ✅ CI buduje → push do ACR → GitOps deploy do dev
 ```
 
 Sprawdź status:
@@ -31,7 +30,6 @@ Rollback (jeśli coś poszło nie tak):
 ```bash
 git revert HEAD
 git push origin main
-# ✅ Automatycznie wdroży poprzednią wersję
 ```
 
 ---
@@ -49,7 +47,7 @@ gitops/
 │   │   └── values-prod.yaml
 │   └── hello-service/
 │       └── ...
-├── scripts/                 # Narzędzia pomocnicze
+├── scripts/                # Narzędzia pomocnicze
 │   ├── add-service.sh      # Dodaj nowy serwis
 │   └── promote.sh          # Promuj między środowiskami
 └── .github/workflows/
@@ -58,7 +56,7 @@ gitops/
 
 ---
 
-## 🔄 Jak to działa (na przykładzie greeting-service)
+## Jak to działa (na przykładzie greeting-service)
 
 ### 1. Push kodu do serwisu
 
@@ -77,17 +75,19 @@ Workflow `.github/workflows/cicd.yml`:
 - Push do ACR: `hycomcminternal.azurecr.io/greeting-service:abc1234`
 - Trigger GitOps (repository_dispatch)
 
-### 3. CD (w gitops - TEN REPO)
+### 3. CD (w gitops - to repo)
 
 Workflow `.github/workflows/deploy.yml`:
 
 1. Aktualizuje `apps/greeting-service/values-dev.yaml`:
+
    ```yaml
    java-service:
      image:
        repository: "hycomcminternal.azurecr.io/greeting-service"
        tag: "abc1234"  # ← nowy tag
    ```
+
 2. Commituje zmiany (audit trail)
 3. Helm upgrade na AKS namespace `dev`
 
@@ -99,7 +99,7 @@ Pod `greeting-service` w namespace `dev` jest zrestartowany z nowym image.
 
 ---
 
-## 🆕 Dodawanie nowego serwisu
+## Dodawanie nowego serwisu
 
 ### Opcja 1: Użyj skryptu (ZALECANE)
 
@@ -180,12 +180,12 @@ Skrypt:
    ```
 
    **Secrets wymagane w serwisie**:
-   
+
    - `GITOPS_PAT` (GitHub PAT z uprawnieniem `repo`)
    - `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` (dla ACR)
 
    **Variables wymagane**:
-   
+
    - `ACR_LOGIN_SERVER` (np. `hycomcminternal.azurecr.io`)
 
 6. **Test**:
@@ -204,7 +204,7 @@ Skrypt:
 
 ---
 
-## 🎯 Promocja między środowiskami
+## Promocja między środowiskami
 
 ### DEV → automatyczny
 Każdy push do `main` w serwisie → auto-deploy do `dev`.
@@ -244,7 +244,7 @@ Analogicznie, ale dla PROD **WYMAGANY** review od zespołu ops (GitHub Environme
 
 ---
 
-## 🔍 Debugging
+## Debugging
 
 ### Pod nie startuje?
 
@@ -289,7 +289,7 @@ helm search repo java-service
 
 ---
 
-## 📊 Monitoring
+## Monitoring
 
 ### Co jest wdrożone gdzie?
 
@@ -322,7 +322,7 @@ diff <(yq eval '.java-service.image.tag' apps/greeting-service/values-dev.yaml) 
 
 ---
 
-## 🚨 Rollback
+## Rollback
 
 ### Szybki rollback (prod)
 
@@ -335,7 +335,7 @@ git log --oneline apps/greeting-service/values-prod.yaml
 git revert HEAD
 git push origin main
 
-# ✅ Automatycznie wdroży poprzednią wersję na prod
+# Automatycznie wdroży poprzednią wersję na prod
 ```
 
 ### Rollback do konkretnej wersji
@@ -358,7 +358,7 @@ git push origin main
 
 ---
 
-## ⚙️ Konfiguracja
+## Konfiguracja
 
 ### Secrets (w tym repo gitops)
 
@@ -393,7 +393,7 @@ ACR_LOGIN_SERVER         # dla client-payload do gitops
 
 ---
 
-## 🛠️ Narzędzia
+## Narzędzia
 
 ### Instalacja yq (jeśli nie masz)
 
@@ -417,7 +417,7 @@ alias gitops-history='git log --oneline -10 apps/greeting-service/values-dev.yam
 
 ---
 
-## 📚 Więcej informacji
+## Więcej informacji
 
 - **Szczegóły workflow**: `.github/workflows/README.md`
 - **Przykład konfiguracji**: `apps/greeting-service/README.md`
@@ -425,7 +425,7 @@ alias gitops-history='git log --oneline -10 apps/greeting-service/values-dev.yam
 
 ---
 
-## 🤝 Wsparcie
+## Wsparcie
 
 **Problemy?**
 

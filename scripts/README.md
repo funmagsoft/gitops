@@ -65,7 +65,7 @@ Wyświetla aktualny stan deploymentów (tagi, replicas).
 
 **Przykład output** (wszystkie serwisy):
 ```
-📦 Wszystkie serwisy:
+Wszystkie serwisy:
 
   greeting-service          | Dev: abc1234        | Prod: v2.0.1
   hello-service             | Dev: def5678        | Prod: v1.5.0
@@ -74,14 +74,14 @@ Wyświetla aktualny stan deploymentów (tagi, replicas).
 
 **Przykład output** (konkretny serwis):
 ```
-🔍 Serwis: greeting-service
+Serwis: greeting-service
 
   dev        | Tag: abc1234             | Replicas: 1
   staging    | Tag: abc1234             | Replicas: 2
   pre        | Tag: v2.0.1              | Replicas: 2
   prod       | Tag: v2.0.1              | Replicas: 5
 
-📜 Ostatnie 5 deployów do dev:
+Ostatnie 5 deployów do dev:
 abc1234 deploy: greeting-service to dev - abc1234
 def5678 deploy: greeting-service to dev - def5678
 ...
@@ -150,7 +150,7 @@ git push origin main
 
 ---
 
-## 🤝 Rozwój skryptów
+## Rozwój skryptów
 
 Chcesz dodać nowy skrypt? Super!
 
