@@ -138,6 +138,7 @@ git push origin main
 ### Wymagane w repo gitops
 
 **Secrets** (Settings → Secrets and variables → Actions):
+
 - `AZURE_CLIENT_ID` - Azure SP Client ID (OIDC)
 - `AZURE_TENANT_ID` - Azure Tenant ID
 - `AZURE_SUBSCRIPTION_ID` - Azure Subscription ID
