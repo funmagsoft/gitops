@@ -122,6 +122,14 @@ jobs:
           # Pobierz dependencies (java-service chart)
           helm dependency update
           
+          echo "📋 Preview of Kubernetes manifests"
+          echo "=========================================="
+          helm template ${{ steps.parse.outputs.app_name }} . \
+            --namespace ${{ steps.parse.outputs.environment }} \
+            -f values-${{ steps.parse.outputs.environment }}.yaml
+          echo "=========================================="
+          echo ""
+          
           echo "🚀 Deploying ${{ steps.parse.outputs.app_name }} to ${{ steps.parse.outputs.environment }}"
           
           helm upgrade --install ${{ steps.parse.outputs.app_name }} . \
