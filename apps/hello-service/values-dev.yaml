@@ -2,8 +2,8 @@ java-service:
   replicaCount: 1
   fullnameOverride: "hello-service"
   image:
-    repository: ""      # Będzie ustawiane przez workflow
-    tag: "latest"       # Placeholder - będzie nadpisywane
+    repository: "hycomcminternal.azurecr.io/hello-service" # Będzie ustawiane przez workflow
+    tag: "db1c02e" # Placeholder - będzie nadpisywane
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -15,4 +15,3 @@ java-service:
     limits:
       memory: "512Mi"
       cpu: "500m"
-
