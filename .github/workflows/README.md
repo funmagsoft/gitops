@@ -138,21 +138,24 @@ GitHub UI → Actions → Deploy to AKS → Run workflow:
 ```
 
 #### Promocja dev → prod (przez PR)
+
+**Użyj skryptu** (zalecane):
+```bash
+./scripts/promote.sh greeting-service dev prod
 ```
-1. Sprawdź tag w dev:
-   yq eval '.java-service.image.tag' apps/greeting-service/values-dev.yaml
 
-2. Utwórz branch i zaktualizuj prod:
-   git checkout -b promote-to-prod
-   TAG=$(yq eval '.java-service.image.tag' apps/greeting-service/values-dev.yaml)
-   yq eval -i ".java-service.image.tag = \"$TAG\"" apps/greeting-service/values-prod.yaml
-   git commit -am "promote: greeting-service to prod - $TAG"
-   git push
+**Lub ręcznie**:
+```bash
+# 1. Sprawdź tag w dev
+TAG=$(yq eval '.java-service.image.tag' apps/greeting-service/values-dev.yaml)
 
-3. Otwórz PR → Review (ops-team) → Approve → Merge
+# 2. Użyj skryptu lub ręcznie
+git checkout -b promote-to-prod
+yq eval -i ".java-service.image.tag = \"$TAG\"" apps/greeting-service/values-prod.yaml
+git commit -am "promote: greeting-service to prod - $TAG"
+git push origin promote-to-prod
 
-4. Workflow deploy.yml wykryje zmianę w main i wdroży
-   (lub użyj workflow_dispatch z tym tagiem)
+# 3. Otwórz PR → Review (ops-team) → Merge
 ```
 
 ### Troubleshooting
