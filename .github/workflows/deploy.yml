@@ -1,0 +1,143 @@
+name: Deploy to AKS
+
+on:
+  repository_dispatch:
+    types: [deploy]
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Service name (e.g., greeting-service)'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - pre
+          - prod
+      image_tag:
+        description: 'Image tag (SHA or version)'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # GitHub Environments dla approval (skonfiguruj później w Settings)
+    environment: ${{ github.event.client_payload.environment || inputs.environment }}
+
+    steps:
+      - name: Checkout gitops repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse inputs (repository_dispatch vs workflow_dispatch)
+        id: parse
+        run: |
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "app_name=${{ github.event.client_payload.app_name }}" >> $GITHUB_OUTPUT
+            echo "environment=${{ github.event.client_payload.environment }}" >> $GITHUB_OUTPUT
+            echo "image_tag=${{ github.event.client_payload.image_tag }}" >> $GITHUB_OUTPUT
+            echo "acr_server=${{ github.event.client_payload.acr_server }}" >> $GITHUB_OUTPUT
+          else
+            echo "app_name=${{ inputs.app_name }}" >> $GITHUB_OUTPUT
+            echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+            echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+            echo "acr_server=${{ vars.ACR_LOGIN_SERVER }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate app exists
+        run: |
+          if [ ! -d "apps/${{ steps.parse.outputs.app_name }}" ]; then
+            echo "❌ Error: App 'apps/${{ steps.parse.outputs.app_name }}' does not exist in gitops repo"
+            exit 1
+          fi
+
+      - name: Install yq (YAML processor)
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Update values file with new image
+        run: |
+          APP_DIR="apps/${{ steps.parse.outputs.app_name }}"
+          VALUES_FILE="$APP_DIR/values-${{ steps.parse.outputs.environment }}.yaml"
+          
+          if [ ! -f "$VALUES_FILE" ]; then
+            echo "❌ Error: Values file '$VALUES_FILE' not found"
+            exit 1
+          fi
+          
+          echo "📝 Updating $VALUES_FILE"
+          yq eval -i ".java-service.image.repository = \"${{ steps.parse.outputs.acr_server }}/${{ steps.parse.outputs.app_name }}\"" "$VALUES_FILE"
+          yq eval -i ".java-service.image.tag = \"${{ steps.parse.outputs.image_tag }}\"" "$VALUES_FILE"
+          
+          echo "📄 Updated values:"
+          cat "$VALUES_FILE"
+
+      - name: Commit updated values
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add apps/${{ steps.parse.outputs.app_name }}/values-${{ steps.parse.outputs.environment }}.yaml
+          
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit (image already at this version)"
+          else
+            git commit -m "deploy: ${{ steps.parse.outputs.app_name }} to ${{ steps.parse.outputs.environment }} - ${{ steps.parse.outputs.image_tag }}"
+            git push
+            echo "✅ Committed changes to gitops repo"
+          fi
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: AKS login
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ secrets.AKS_RG }} \
+            --name ${{ secrets.AKS_NAME }} \
+            --overwrite-existing
+
+      - name: Deploy to AKS via Helm
+        run: |
+          cd apps/${{ steps.parse.outputs.app_name }}
+          
+          helm repo add funmagsoft https://funmagsoft.github.io/helm/charts
+          helm repo update
+          
+          # Pobierz dependencies (java-service chart)
+          helm dependency update
+          
+          echo "🚀 Deploying ${{ steps.parse.outputs.app_name }} to ${{ steps.parse.outputs.environment }}"
+          
+          helm upgrade --install ${{ steps.parse.outputs.app_name }} . \
+            --namespace ${{ steps.parse.outputs.environment }} \
+            --create-namespace \
+            -f values-${{ steps.parse.outputs.environment }}.yaml \
+            --wait --timeout 5m
+          
+          echo "✅ Deployment complete"
+
+      - name: Deployment Summary
+        run: |
+          echo "### 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **App**: ${{ steps.parse.outputs.app_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ steps.parse.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: ${{ steps.parse.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Namespace**: ${{ steps.parse.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: ${{ steps.parse.outputs.acr_server }}/${{ steps.parse.outputs.app_name }}:${{ steps.parse.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+

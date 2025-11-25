@@ -1,0 +1,27 @@
+java-service:
+  replicaCount: 5
+  fullnameOverride: "greeting-service"
+  image:
+    repository: ""      # Będzie ustawiane przez workflow
+    tag: "latest"       # Placeholder - będzie nadpisywane
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
+  # Dla prod możesz dodać dodatkowo:
+  # ingress:
+  #   enabled: true
+  #   hosts:
+  #     - host: greeting-service.example.com
+  # autoscaling:
+  #   enabled: true
+  #   minReplicas: 5
+  #   maxReplicas: 10
+

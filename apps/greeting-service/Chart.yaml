@@ -1,0 +1,11 @@
+apiVersion: v2
+name: greeting-service
+description: Helm chart for Greeting Service using shared java-service chart
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: java-service
+    version: 1.0.0
+    repository: "https://funmagsoft.github.io/helm/charts"
+
