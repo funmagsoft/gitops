@@ -3,7 +3,7 @@ java-service:
   fullnameOverride: "greeting-service"
   image:
     repository: "hycomcminternal.azurecr.io/greeting-service" # Będzie ustawiane przez workflow
-    tag: "a028317" # Placeholder - będzie nadpisywane
+    tag: "33005f6" # Placeholder - będzie nadpisywane
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -23,4 +23,3 @@ java-service:
       value: "hycomcminternal"
     - name: AZURE_STORAGE_CONTAINER_NAME
       value: "test-container-dev"
-    
