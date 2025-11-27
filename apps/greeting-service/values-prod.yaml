@@ -15,13 +15,3 @@ java-service:
     limits:
       memory: "2Gi"
       cpu: "2000m"
-  # Dla prod możesz dodać dodatkowo:
-  # ingress:
-  #   enabled: true
-  #   hosts:
-  #     - host: greeting-service.example.com
-  # autoscaling:
-  #   enabled: true
-  #   minReplicas: 5
-  #   maxReplicas: 10
-

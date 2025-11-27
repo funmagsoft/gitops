@@ -8,6 +8,7 @@ java-service:
   service:
     type: ClusterIP
     port: 8080
+  serviceAccountName: "hello-service-sa"
   resources:
     requests:
       memory: "256Mi"
@@ -15,3 +16,10 @@ java-service:
     limits:
       memory: "512Mi"
       cpu: "500m"
+  env:
+    - name: AZURE_KEYVAULT_URL
+      value: "https://hycomcminternal-kv.vault.azure.net"
+    - name: AZURE_STORAGE_ACCOUNT_NAME
+      value: "hycomcminternal"
+    - name: AZURE_STORAGE_CONTAINER_NAME
+      value: "test-container-dev"

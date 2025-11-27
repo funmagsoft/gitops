@@ -15,4 +15,3 @@ java-service:
     limits:
       memory: "2Gi"
       cpu: "2000m"
-
